@@ -39,14 +39,17 @@ def evaluate(drawing: dict, extractions: list[dict], mapping: list[dict]) -> dic
     reasons: list[str] = []
     seen: set[tuple[str, str]] = set()
     for row in mapping:
-        cid = row["characteristic_id"]
+        cid = row.get("characteristic_id")
         spec = characteristics.get(cid)
-        source = row["source_document"]
-        if spec is None or row.get("unit") != spec["unit"] or (source, cid) in seen:
+        source = row.get("source_document")
+        try:
+            measured = float(row["measured_value"])
+        except (KeyError, TypeError, ValueError):
+            measured = None
+        if spec is None or measured is None or row.get("unit") != spec["unit"] or (source, cid) in seen:
             reasons.append("mapping_invalid")
             continue
         seen.add((source, cid))
-        measured = float(row["measured_value"])
         passed = spec["lower"] <= measured <= spec["upper"]
         mapped_rows.append(
             {
@@ -119,6 +122,7 @@ def evaluate(drawing: dict, extractions: list[dict], mapping: list[dict]) -> dic
             for row in cmm_rows
         ],
         "identities": identities,
+        "material": {"drawing": drawing_material, "material_cert": cert_material},
         "gauge_valid": gauge_valid,
         "low_confidence_fields": low_confidence,
         "disposition": disposition,

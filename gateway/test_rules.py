@@ -90,6 +90,16 @@ def test_unknown_characteristic_holds():
     assert result["disposition"] == "release"
 
 
+def test_row_without_a_measurement_holds():
+    folder = PACKETS / "P01"
+    drawing = json.loads((folder / "drawing.json").read_text())
+    extractions = extract.extract_packet(folder)
+    bad = [{"supplier_feature": "Bohrung A", "characteristic_id": "C4", "unit": "mm", "source_document": "cmm_report"}]
+    checked = rules.evaluate(drawing, extractions, bad)
+    assert checked["disposition"] == "hold"
+    assert "mapping_invalid" in checked["reasons"]
+
+
 def test_packet_11_holds_for_the_gauge():
     result = _case("P11")
     assert result["disposition"] == "hold"

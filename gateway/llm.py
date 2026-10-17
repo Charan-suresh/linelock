@@ -18,6 +18,8 @@ DECISION_SYSTEM = """You decide supplier responsibility for a quarantined or hel
 Reply with JSON only:
 {responsibility, cited_clause: {document, clause_id, quote}, mrb_recommendation, ncr_text, supplier_email}.
 responsibility is supplier, internal, or unclear.
+If a reason is gauge_invalid, heat_conflict, low_confidence, or mapping_invalid, the facts are not settled: responsibility is unclear.
+supplier_email is the body of the email to the supplier in English, not an address. Leave it empty unless responsibility is supplier.
 document is the FILE name the quote comes from, for example qa-mueller.md.
 quote must be copied verbatim from the library text you were given.
 You cannot release the batch."""
@@ -48,6 +50,13 @@ def _chat(system: str, user: str) -> str:
     return response.json()["choices"][0]["message"]["content"]
 
 
+def _chat_json(system: str, user: str):
+    try:
+        return _json_from(_chat(system, user))
+    except json.JSONDecodeError:
+        return _json_from(_chat(system, user))
+
+
 def _json_from(text: str):
     start = text.find("[")
     obj = text.find("{")
@@ -69,7 +78,7 @@ def map_features(drawing_revision: dict, extractions: list[dict]) -> list[dict]:
             lines.append(
                 f"{feature['name']} | {feature['value']} | {feature['unit']} | {extraction['document']}"
             )
-    return _json_from(_chat(MAPPING_SYSTEM, "\n".join(lines)))
+    return _chat_json(MAPPING_SYSTEM, "\n".join(lines))
 
 
 def translate(text: str, language: str) -> str:
@@ -77,7 +86,7 @@ def translate(text: str, language: str) -> str:
         import evolus_client
 
         return evolus_client.translate_text(text, language)
-    payload = _json_from(_chat(TRANSLATE_SYSTEM, f"Language {language}\n\n{text}"))
+    payload = _chat_json(TRANSLATE_SYSTEM, f"Language {language}\n\n{text}")
     return payload.get("supplier_email", "")
 
 
@@ -89,6 +98,9 @@ def decide(conformance: dict, library_text: str, supplier: str = "") -> dict:
             facts.append(f"{row['id']} measured {row['measured']}, allowed {row['lower']} to {row['upper']}")
     if rows and all(row["pass"] for row in rows):
         facts.append("Every measurement is inside the drawing revision on the purchase order.")
+    material = conformance.get("material") or {}
+    if material.get("drawing") and material.get("material_cert") and material["drawing"] != material["material_cert"]:
+        facts.append(f"Material on the drawing: {material['drawing']}. Material on the certificate: {material['material_cert']}")
     for identity in conformance.get("identities", []):
         if not identity["match"]:
             facts.append(f"{identity['field']} by document: {json.dumps(identity['values_by_document'])}")
@@ -97,4 +109,4 @@ def decide(conformance: dict, library_text: str, supplier: str = "") -> dict:
         + "\nFACTS\n" + "\n".join(facts)
         + "\nLIBRARY\n" + library_text
     )
-    return _json_from(_chat(DECISION_SYSTEM, user))
+    return _chat_json(DECISION_SYSTEM, user)

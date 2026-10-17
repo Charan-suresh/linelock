@@ -29,7 +29,7 @@ Gateway (FastAPI, SQLite, append-only audit)
 Model endpoint (LLM_BASE_URL, OpenAI-compatible)
 ```
 
-In this checkout the extractor is local (`EXTRACTOR=local`), translation uses the model endpoint, and the model endpoint is the stand-in in `llm_mock/`. That stand-in is not a 7B model and not an AMD GPU. The numbers in `docs/eval.md` and `docs/benchmark.md` are from that stand-in.
+The deployed gateway uses `Qwen3.8-Flash-Next` on AMD's shared Radeon Cloud API (`https://developer.amd.com.cn/radeon/api/v1`) with `LLM_THINKING=off`. That is not a private vLLM endpoint. The extractor is local (`EXTRACTOR=local`). The numbers in `docs/eval.md` and `docs/benchmark.md` are from that model: 10 of 12 packets matched their labels. `llm_mock/` is a stand-in for running without any model key.
 
 The Evolus calls, when the variables are set, use the paths in `docs/evolus-api.md`: workflow execute, the translate AI tool, and ask-file. `EVOLUS_WORKFLOW_ID` turns on the NCR workflow. `TRANSLATE_BACKEND=evolus` turns on the translate tool. Those ids come from the event workspace. Create that workspace from https://app.evolus.ai/join/AMDACT3. `scripts/setup-amd-evolus.sh` walks through the AMD droplet, vLLM, and that workspace. It does not create the accounts.
 

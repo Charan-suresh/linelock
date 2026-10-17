@@ -1,7 +1,9 @@
 # Benchmark
 
-This run did not use an AMD card. `LLM_BASE_URL` was the local stand-in, which returns a prepared answer and does not generate tokens. There is no tokens-per-second number, and none should be shown as if it were measured on AMD.
+Twelve packets through the gateway on 17 October 2026. Model `Qwen3.8-Flash-Next` on AMD's shared Radeon Cloud API at `https://developer.amd.com.cn/radeon/api/v1`, with `LLM_THINKING=off`. The card behind that API is not reported to us, so no card is named here.
 
-Twelve packets through the gateway. Median case time 33 ms. Fastest 21 ms. Slowest 60 ms.
+Median case time 33 s. Fastest 22 s. Slowest 70 s. A case makes one model call to map features, a second to decide responsibility on a failed batch, and Evolus calls for the workflow and, on a supplier claim, the translation.
 
-When a droplet answers `/v1/models` for `Qwen/Qwen2.5-7B-Instruct`, run `python eval/run.py` against that endpoint and replace this file with tokens per second, time to first token, the median case time, and the card name. Those figures are not in this file.
+With reasoning left on, one mapping call on packet 9 took 45 s and spent 550 of 1,027 completion tokens on reasoning. With `LLM_THINKING=off` the same call took 11 s.
+
+Tokens per second and time to first token were not measured. They belong to a private vLLM endpoint, which this run did not use.
