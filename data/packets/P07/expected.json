@@ -1,0 +1,9 @@
+{
+  "disposition": "quarantine",
+  "reasons_contain": [
+    "material_mismatch"
+  ],
+  "responsibility": "supplier",
+  "clause_id": "Q-5",
+  "amount": 110.4
+}

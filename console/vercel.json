@@ -1,0 +1,16 @@
+{
+  "functions": {
+    "api/proxy.js": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    { "source": "/health", "destination": "/api/proxy?path=health" },
+    { "source": "/cases", "destination": "/api/proxy?path=cases" },
+    { "source": "/cases/:id", "destination": "/api/proxy?path=cases/:id" },
+    { "source": "/cases/:id/:action", "destination": "/api/proxy?path=cases/:id/:action" },
+    { "source": "/packets", "destination": "/api/proxy?path=packets" },
+    { "source": "/pitch", "destination": "/api/proxy?path=pitch" },
+    { "source": "/pitch/:action", "destination": "/api/proxy?path=pitch/:action" }
+  ]
+}

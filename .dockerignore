@@ -1,0 +1,13 @@
+.env
+.venv
+*.db
+*.db-journal
+__pycache__
+.pytest_cache
+console
+docs
+eval
+llm_mock
+scripts
+data/uploads
+data/raw

@@ -1,0 +1,9 @@
+{
+  "disposition": "release",
+  "mapping": {
+    "Bohrung A": "C4",
+    "Laenge": "C1",
+    "Breite": "C2",
+    "Dicke": "C3"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "disposition": "quarantine",
+  "reasons_contain": [
+    "revision_conflict"
+  ],
+  "responsibility": "internal"
+}

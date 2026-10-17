@@ -1,0 +1,102 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>LineLock slides</title>
+<style>
+  @page { size: 13.333in 7.5in; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #1c1915; color: #1c1915; }
+  section {
+    width: 13.333in; height: 7.5in; padding: 0.7in 0.85in;
+    background: #f4f1ea; page-break-after: always;
+    display: flex; flex-direction: column;
+  }
+  section:last-child { page-break-after: auto; }
+  .kicker { font: 14px ui-monospace, monospace; letter-spacing: 0.04em; color: #6b6256; }
+  h1 { font: 42px Georgia, serif; margin: 12px 0 18px; line-height: 1.15; }
+  p, li { font: 22px Georgia, serif; line-height: 1.35; }
+  ul { margin: 0; padding-left: 1.1em; }
+  li { margin: 8px 0; }
+  .cite { margin-top: auto; font: 14px ui-monospace, monospace; color: #6b6256; }
+  table { border-collapse: collapse; width: 100%; font: 18px Georgia, serif; }
+  td, th { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid #d9d0c3; vertical-align: top; }
+  .script p { font-size: 16px; margin: 6px 0; }
+  .script h1 { font-size: 32px; }
+</style>
+<section>
+  <div class="kicker">1 · Problem</div>
+  <h1>Stop a bad forging before it is machined into a brake bracket.</h1>
+  <p>Giulia at receiving has a delivery note, a material certificate, the supplier's inspection report, and the shop's own measurement. The check is often late.</p>
+  <p class="cite">No measured number on this slide.</p>
+</section>
+<section>
+  <div class="kicker">2 · Product</div>
+  <h1>Release, quarantine, or hold. Then a person decides.</h1>
+  <p>Code checks sizes, identities, and the gauge date. The model maps the supplier's feature names, and on a failure it quotes the contract and drafts the claim. The model cannot release the batch.</p>
+  <p class="cite">No measured number on this slide.</p>
+</section>
+<section>
+  <div class="kicker">3 · Demo</div>
+  <h1>Four packets.</h1>
+  <ul>
+    <li>P01, German supplier. Released.</li>
+    <li>P06, bore 22.061 mm. Quarantined. Supplier. EUR 110.40.</li>
+    <li>P09, fails the latest drawing, meets the revision on the order. Quarantined. Internal. No claim.</li>
+    <li>P11, gauge expired. Held by code.</li>
+  </ul>
+  <p class="cite">Source: docs/eval.md</p>
+</section>
+<section>
+  <div class="kicker">4 · Who decides what</div>
+  <table>
+    <tr><th>Decision</th><th>Who</th></tr>
+    <tr><td>Feature names, on every packet</td><td>Model</td></tr>
+    <tr><td>Tolerances, identities, gauge date, release or quarantine, the euro amount</td><td>Code</td></tr>
+    <tr><td>Fault, the quoted clause, the report</td><td>Model, after code has failed the batch</td></tr>
+    <tr><td>Send the claim, or release under concession</td><td>A person</td></tr>
+  </table>
+  <p class="cite">No measured number on this slide.</p>
+</section>
+<section>
+  <div class="kicker">5 · What we do not claim</div>
+  <h1>Incoming inspection already exists.</h1>
+  <p>LineLock does not replace a quality system. The shop, the contracts, and the packets are written for this demo. Extraction in this build is local. The model is the local stand-in until it is pointed at AMD.</p>
+  <p>The four decisions: the revision on the purchase order, an expired gauge, a claim only when a sentence covers the defect, and a small-shop upload gate.</p>
+  <p class="cite">Source: linelock-plan.md section 11. No measured number.</p>
+</section>
+<section>
+  <div class="kicker">6 · Numbers</div>
+  <h1>12 of 12 labelled packets agreed.</h1>
+  <ul>
+    <li>Packet 6 claim: EUR 110.40.</li>
+    <li>Edited C4 of 22.080 mm became quarantine.</li>
+    <li>Median case time 33 ms. Fastest 21 ms. Slowest 60 ms.</li>
+  </ul>
+  <p>The hand-timed comparison is not measured.</p>
+  <p class="cite">12 of 12, EUR 110.40, and the edit: docs/eval.md. Times: docs/benchmark.md. Local stand-in, not an AMD card.</p>
+</section>
+<section>
+  <div class="kicker">7 · Buyer</div>
+  <h1>A quality engineer at a small receiving dock.</h1>
+  <p>Offer shape: per receiving dock, per month. No price figure. Next step: one supplier at one shop in Imperia.</p>
+  <p class="cite">Assumption. Not a measured result. No euro price.</p>
+</section>
+<section>
+  <div class="kicker">8 · Appendix · the machine</div>
+  <h1>This run did not use an AMD card.</h1>
+  <p>The stand-in returns a prepared answer. It does not generate tokens. There is no tokens-per-second number, and none belongs on the shop-floor screen.</p>
+  <p>When vLLM is connected, replace this slide with tokens per second, time to first token, and the median case time. Name the card.</p>
+  <p class="cite">Source: docs/benchmark.md</p>
+</section>
+<section class="script">
+  <div class="kicker">Rehearsal script · about 4 minutes · not yet timed</div>
+  <h1>Say this. Two people still have to time it.</h1>
+  <p>0:00 A wrong forging in a brake bracket is a safety problem. Giulia checks every batch's paperwork. This is a fictional shop.</p>
+  <p>0:30 Packet 1. The supplier calls this bore Bohrung A. Our drawing calls it characteristic 4. Code checked every tolerance. Released.</p>
+  <p>1:00 Packet 6. Bore out by four hundredths. Code quarantined it. The claim is EUR 110.40. A person approves it before anything is sent.</p>
+  <p>1:50 Packet 9. Also out of tolerance against the latest drawing. The purchase order named revision B, and the part meets B. No claim.</p>
+  <p>2:30 Packet 11. Our gauge expired. Code held the batch. The model only writes why.</p>
+  <p>3:00 Change the measurement and run it again.</p>
+  <p>3:20 Twelve of twelve labelled packets agreed. The hand comparison is not measured yet. The times are the local stand-in, not AMD.</p>
+  <p>3:45 Quality engineers at small shops. Per receiving dock, per month. We are not replacing a quality system.</p>
+  <p class="cite">Words from linelock-plan.md section 9, with the AMD and Evolus sentences left out until those endpoints are connected.</p>
+</section>

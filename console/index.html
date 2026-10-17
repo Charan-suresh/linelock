@@ -1,0 +1,140 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LineLock</title>
+<style>
+  body { font-family: Georgia, serif; margin: 0; background: #f4f1ea; color: #1c1915; }
+  header, main { padding: 16px; max-width: 880px; margin: 0 auto; }
+  header { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+  button, input[type=file] { font: inherit; }
+  button { background: #1c1915; color: #f4f1ea; border: 0; padding: 10px 14px; }
+  .banner { background: #efe2c0; padding: 10px 12px; margin-bottom: 12px; }
+  .queue { display: flex; flex-direction: column; gap: 8px; }
+  .row, .card { background: white; padding: 12px; }
+  .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+  .tag { font-family: ui-monospace, monospace; font-size: 13px; }
+  .hold { color: #8a4b08; } .quarantine { color: #8d1d1d; } .release { color: #1d6b3a; }
+  .split { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  @media (min-width: 700px) { .split { grid-template-columns: 1fr 1fr 1fr; } }
+  textarea { width: 100%; min-height: 64px; font: inherit; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+</style>
+<header>
+  <div>
+    <strong>LineLock</strong>
+    <div class="tag">Receiving · Officine Meccaniche Riviera</div>
+  </div>
+  <button id="pitch" type="button">Pitch recording</button>
+</header>
+<main>
+  <div id="banner"></div>
+  <form id="upload">
+    <input type="file" name="files" multiple>
+    <button>Check this delivery</button>
+  </form>
+  <h2>Queue</h2>
+  <div id="queue" class="queue"></div>
+  <div id="case"></div>
+</main>
+<script>
+const banner = document.getElementById("banner");
+const queue = document.getElementById("queue");
+const caseView = document.getElementById("case");
+
+function money(value) {
+  return value ? "EUR " + Number(value).toFixed(2) : "EUR 0.00";
+}
+
+async function loadQueue() {
+  const rows = await (await fetch("/cases")).json();
+  queue.innerHTML = "";
+  for (const row of rows) {
+    const button = document.createElement("button");
+    button.className = "row";
+    button.style.background = "white";
+    button.style.color = "#1c1915";
+    button.innerHTML = `<span>Case ${row.id}</span><span class="tag ${row.disposition}">${row.disposition} · ${row.responsibility || "—"} · ${money(row.amount)}</span>`;
+    button.onclick = () => openCase(row.id);
+    queue.appendChild(button);
+  }
+}
+
+function measurement(record) {
+  const failed = (record.conformance.characteristics || []).find((item) => !item.pass);
+  const row = failed || (record.conformance.characteristics || [])[0];
+  if (!row) return "No measurement";
+  return `${row.id}: ${row.measured} mm\nallowed ${row.lower} to ${row.upper}`;
+}
+
+async function openCase(id) {
+  const body = await (await fetch("/cases/" + id)).json();
+  const record = body.record;
+  const decision = record.decision || {};
+  const clause = (decision.cited_clause || {}).quote || "No clause. Nothing is sent.";
+  caseView.innerHTML = `
+    <h2>Case ${body.id}</h2>
+    <p class="tag ${body.disposition}">${body.disposition} · ${(record.conformance.reasons || []).join(", ") || "all checks passed"}</p>
+    <div class="split">
+      <div class="card"><strong>Measurement</strong><p>${measurement(record)}</p></div>
+      <div class="card"><strong>Contract</strong><p>${clause}</p></div>
+      <div class="card"><strong>Claim</strong><p>${money(record.amount)}</p><p>${decision.ncr_text || ""}</p><p>${record.supplier_email_translated || ""}</p></div>
+    </div>
+    <div class="actions">
+      <button id="approve" type="button">Luca approves the claim</button>
+    </div>
+    <textarea id="reason" placeholder="Giulia: reason for releasing under concession"></textarea>
+    <div class="actions"><button id="concession" type="button">Release under concession</button></div>
+    <label class="tag">New C4 measurement (mm) <input id="measured" value="22.080" style="width:6em"></label>
+    <div class="actions"><button id="rerun" type="button">Re-run</button></div>
+    <h3>Audit</h3>
+    <pre class="tag">${body.audit.map((item) => item.created_at + "  " + item.event).join("\n")}</pre>`;
+  document.getElementById("approve").onclick = () => act(id, "approve_claim", "");
+  document.getElementById("concession").onclick = () => act(id, "release_concession", document.getElementById("reason").value);
+  document.getElementById("rerun").onclick = async () => {
+    const response = await fetch("/cases/" + id + "/edit", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ characteristic_id: "C4", measured: Number(document.getElementById("measured").value) }),
+    });
+    if (!response.ok) banner.textContent = await response.text();
+    else { banner.textContent = "Re-ran with the edited measurement."; openCase(id); loadQueue(); }
+  };
+}
+
+async function act(id, action, reason) {
+  const response = await fetch("/cases/" + id + "/approve", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ action, reason }),
+  });
+  if (!response.ok) banner.textContent = await response.text();
+  else { banner.textContent = ""; openCase(id); }
+}
+
+document.getElementById("upload").onsubmit = async (event) => {
+  event.preventDefault();
+  const body = new FormData();
+  for (const file of event.target.files.files) body.append("files", file, file.name);
+  const response = await fetch("/packets", { method: "POST", body });
+  const payload = await response.json();
+  await loadQueue();
+  if (payload.id) openCase(payload.id);
+};
+
+document.getElementById("pitch").onclick = async () => {
+  banner.textContent = "Recording of a live run. Not a new model call.";
+  const runs = await (await fetch("/pitch")).json();
+  queue.innerHTML = "";
+  for (const run of runs.runs) {
+    const button = document.createElement("button");
+    button.className = "row";
+    button.style.background = "white";
+    button.style.color = "#1c1915";
+    button.innerHTML = `<span>${run.packet}</span><span class="tag ${run.disposition}">${run.disposition} · ${money(run.record.amount)}</span>`;
+    button.onclick = () => openCase(run.id);
+    queue.appendChild(button);
+  }
+};
+
+loadQueue();
+</script>

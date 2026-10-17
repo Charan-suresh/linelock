@@ -1,0 +1,79 @@
+{
+  "drawing_no": "DRW-441",
+  "part_no": "BRK-220",
+  "material": "42CrMo4",
+  "revisions": {
+    "B": {
+      "characteristics": [
+        {
+          "id": "C1",
+          "name": "overall length",
+          "nominal": 120.0,
+          "lower": 119.8,
+          "upper": 120.2,
+          "unit": "mm"
+        },
+        {
+          "id": "C2",
+          "name": "width",
+          "nominal": 45.0,
+          "lower": 44.9,
+          "upper": 45.1,
+          "unit": "mm"
+        },
+        {
+          "id": "C3",
+          "name": "thickness",
+          "nominal": 12.0,
+          "lower": 11.9,
+          "upper": 12.1,
+          "unit": "mm"
+        },
+        {
+          "id": "C4",
+          "name": "bore diameter",
+          "nominal": 22.0,
+          "lower": 21.98,
+          "upper": 22.05,
+          "unit": "mm"
+        }
+      ]
+    },
+    "C": {
+      "characteristics": [
+        {
+          "id": "C1",
+          "name": "overall length",
+          "nominal": 120.0,
+          "lower": 119.8,
+          "upper": 120.2,
+          "unit": "mm"
+        },
+        {
+          "id": "C2",
+          "name": "width",
+          "nominal": 45.0,
+          "lower": 44.9,
+          "upper": 45.1,
+          "unit": "mm"
+        },
+        {
+          "id": "C3",
+          "name": "thickness",
+          "nominal": 12.0,
+          "lower": 11.9,
+          "upper": 12.1,
+          "unit": "mm"
+        },
+        {
+          "id": "C4",
+          "name": "bore diameter",
+          "nominal": 22.0,
+          "lower": 22.0,
+          "upper": 22.021,
+          "unit": "mm"
+        }
+      ]
+    }
+  }
+}

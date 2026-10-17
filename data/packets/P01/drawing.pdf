@@ -1,0 +1,38 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 510 >>
+stream
+BT /F1 11 Tf 48 780 Td (Drawing DRW-441) Tj ET
+BT /F1 11 Tf 48 764 Td (Part BRK-220 brake caliper bracket forging) Tj ET
+BT /F1 11 Tf 48 748 Td (Material 42CrMo4) Tj ET
+BT /F1 11 Tf 48 732 Td (Revision C bore diameter C4 22.000 to 22.021 mm) Tj ET
+BT /F1 11 Tf 48 716 Td (Revision B bore diameter C4 21.980 to 22.050 mm) Tj ET
+BT /F1 11 Tf 48 700 Td (C1 overall length 119.8 to 120.2 mm) Tj ET
+BT /F1 11 Tf 48 684 Td (C2 width 44.9 to 45.1 mm) Tj ET
+BT /F1 11 Tf 48 668 Td (C3 thickness 11.9 to 12.1 mm) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000801 00000 n 
+trailer << /Size 6 /Root 1 0 R >>
+startxref
+871
+%%EOF

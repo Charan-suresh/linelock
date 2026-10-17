@@ -1,0 +1,9 @@
+{
+  "disposition": "quarantine",
+  "reasons_contain": [
+    "out_of_tolerance"
+  ],
+  "responsibility": "supplier",
+  "clause_id": "Q-4",
+  "amount": 110.4
+}

@@ -1,0 +1,13 @@
+.env
+*.pem
+__pycache__/
+*.pyc
+.venv/
+data/raw/
+data/uploads/
+*.db
+*.db-journal
+.pytest_cache/
+node_modules/
+.next/
+.vercel/
