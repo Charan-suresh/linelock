@@ -10,12 +10,15 @@ import httpx
 MAPPING_SYSTEM = """You map supplier measurement names to drawing characteristic ids.
 Reply with JSON only: a list of objects
 {supplier_feature, characteristic_id, unit, measured_value, source_document}.
+Return one object for every line under FEATURES, from every document, including cmm_report.
+source_document is the last column of that line.
 Use only characteristic ids you were given. Do not judge pass or fail."""
 
 DECISION_SYSTEM = """You decide supplier responsibility for a quarantined or held batch.
 Reply with JSON only:
 {responsibility, cited_clause: {document, clause_id, quote}, mrb_recommendation, ncr_text, supplier_email}.
 responsibility is supplier, internal, or unclear.
+document is the FILE name the quote comes from, for example qa-mueller.md.
 quote must be copied verbatim from the library text you were given.
 You cannot release the batch."""
 
@@ -25,17 +28,20 @@ Reply with JSON only: {supplier_email}."""
 
 def _chat(system: str, user: str) -> str:
     base = os.environ["LLM_BASE_URL"].rstrip("/")
+    body = {
+        "model": os.environ["LLM_MODEL"],
+        "temperature": 0,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+    }
+    if os.environ.get("LLM_THINKING") == "off":
+        body["chat_template_kwargs"] = {"enable_thinking": False}
     response = httpx.post(
         f"{base}/chat/completions",
         headers={"Authorization": f"Bearer {os.environ['LLM_API_KEY']}"},
-        json={
-            "model": os.environ["LLM_MODEL"],
-            "temperature": 0,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-        },
+        json=body,
         timeout=float(os.environ.get("LLM_TIMEOUT", "180")),
     )
     response.raise_for_status()
@@ -75,6 +81,20 @@ def translate(text: str, language: str) -> str:
     return payload.get("supplier_email", "")
 
 
-def decide(conformance: dict, library_text: str) -> dict:
-    user = "REASONS\n" + "\n".join(conformance["reasons"]) + "\nLIBRARY\n" + library_text
+def decide(conformance: dict, library_text: str, supplier: str = "") -> dict:
+    facts = [f"Supplier: {supplier}", f"Drawing revision on the purchase order: {conformance.get('ordered_revision')}"]
+    rows = conformance.get("characteristics", [])
+    for row in rows:
+        if not row["pass"]:
+            facts.append(f"{row['id']} measured {row['measured']}, allowed {row['lower']} to {row['upper']}")
+    if rows and all(row["pass"] for row in rows):
+        facts.append("Every measurement is inside the drawing revision on the purchase order.")
+    for identity in conformance.get("identities", []):
+        if not identity["match"]:
+            facts.append(f"{identity['field']} by document: {json.dumps(identity['values_by_document'])}")
+    user = (
+        "REASONS\n" + "\n".join(conformance["reasons"])
+        + "\nFACTS\n" + "\n".join(facts)
+        + "\nLIBRARY\n" + library_text
+    )
     return _json_from(_chat(DECISION_SYSTEM, user))

@@ -24,13 +24,14 @@ FILES = [
 
 def main() -> None:
     base = os.environ.get("GATEWAY_URL", "http://127.0.0.1:8080")
+    timeout = float(os.environ.get("EVAL_TIMEOUT", "180"))
     names = sys.argv[1:] or sorted(path.name for path in PACKETS.iterdir() if path.is_dir())
     failed = 0
     for name in names:
         folder = PACKETS / name
         expected = __import__("json").loads((folder / "expected.json").read_text())
         files = [("files", (item, (folder / item).read_bytes(), "application/octet-stream")) for item in FILES]
-        body = httpx.post(f"{base}/packets", files=files, timeout=180).json()
+        body = httpx.post(f"{base}/packets", files=files, timeout=timeout).json()
         record = body["record"]
         problems = []
         if record["conformance"]["disposition"] != expected["disposition"]:

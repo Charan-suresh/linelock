@@ -102,7 +102,14 @@ def _audit(conn: sqlite3.Connection, case_id: int, event: str, detail: dict) -> 
 
 
 def _library_text() -> str:
-    return "\n\n".join(path.read_text() for path in sorted(LIBRARY.glob("*.md")))
+    return "\n\n".join(f"FILE: {path.name}\n{path.read_text()}" for path in sorted(LIBRARY.glob("*.md")))
+
+
+def _supplier(extractions: list[dict]) -> str:
+    for item in extractions:
+        if item["document"] == "po" and "supplier" in item["fields"]:
+            return item["fields"]["supplier"]["value"]
+    return ""
 
 
 def run_case(folder: Path) -> dict:
@@ -123,7 +130,7 @@ def run_case(folder: Path) -> dict:
     notes: list[str] = []
     if conformance["disposition"] != "release":
         log.info("step=decide model_call=chat/completions")
-        decision = llm.decide(conformance, _library_text())
+        decision = llm.decide(conformance, _library_text(), _supplier(extractions))
         decision, notes = guardrails.apply(decision, LIBRARY)
         log.info("step=guardrail responsibility=%s notes=%s", decision.get("responsibility"), notes)
 
@@ -222,13 +229,19 @@ async def create_packet(files: list[UploadFile] = File(...)) -> dict:
     for item in files:
         with (folder / item.filename).open("wb") as handle:
             shutil.copyfileobj(item.file, handle)
-    try:
-        record = run_case(folder)
-    except Exception as exc:
-        log.exception("step=failed case=%s", case_id)
-        raise HTTPException(502, str(exc)) from exc
-    _save(conn, case_id, folder, record)
     conn.commit()
+    try:
+        try:
+            record = run_case(folder)
+        except Exception as exc:
+            log.exception("step=failed case=%s", case_id)
+            conn.execute("DELETE FROM cases WHERE id=?", (case_id,))
+            conn.commit()
+            raise HTTPException(502, str(exc)) from exc
+        _save(conn, case_id, folder, record)
+        conn.commit()
+    finally:
+        conn.close()
     return {"id": case_id, "disposition": record["conformance"]["disposition"], "record": record}
 
 
@@ -290,7 +303,7 @@ def edit_case(case_id: int, body: Edit) -> dict:
     decision = None
     notes: list[str] = []
     if conformance["disposition"] != "release":
-        decision = llm.decide(conformance, _library_text())
+        decision = llm.decide(conformance, _library_text(), _supplier(previous["extractions"]))
         decision, notes = guardrails.apply(decision, LIBRARY)
     claim = amount.claim_amount(previous["extractions"], decision, LIBRARY)
     record = {
